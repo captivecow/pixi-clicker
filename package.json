@@ -2,6 +2,10 @@
   "name": "pixi-clicker",
   "version": "1.0.0",
   "description": "",
+  "keywords": [],
+  "license": "MIT",
+  "author": "",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -11,10 +15,9 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check"
   },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
-  "type": "module",
+  "dependencies": {
+    "pixi.js": "^8.16.0"
+  },
   "devDependencies": {
     "jsdoc": "^4.0.5",
     "oxfmt": "^0.36.0",
