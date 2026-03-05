@@ -1,8 +1,22 @@
-import { Application, Assets, Sprite, Rectangle, Texture, SCALE_MODES } from "pixi.js";
+import { Application, Assets, Sprite, Rectangle, Texture, loadJson } from "pixi.js";
+
+const WIDTH = 800;
+const HEIGHT = 600;
+
+const MANIFEST = {
+  bundles: [
+    {
+      name: "dreamland",
+      assets: [
+        { alias: "jsonData", src: "tileset.json", parser: loadJson },
+        { alias: "tileSourceTexture", src: "tileset.png", data: { scaleMode: "nearest" } },
+      ],
+    },
+  ],
+};
 
 async function loadJsonMap() {
-  const WIDTH = 800;
-  const HEIGHT = 600;
+  const dreamlandAssets = await Assets.loadBundle("dreamland");
 
   const width_draw_amount = 20;
   const height_draw_amount = Math.floor(width_draw_amount * (HEIGHT / WIDTH));
@@ -10,9 +24,8 @@ async function loadJsonMap() {
   const width_draw = Math.floor(WIDTH / width_draw_amount);
   const height_draw = Math.floor(HEIGHT / height_draw_amount);
 
-  const jsonData = await Assets.load("src/assets/tileset.json");
-  const tilesetSource = await Assets.load("src/assets/tileset.png");
-  tilesetSource.source.scaleMode = "nearest"; // Use 'linear' for smooth scaling
+  const jsonData = dreamlandAssets.jsonData;
+  const tilesetSource = dreamlandAssets.tileSourceTexture;
   const tileIndexMap = new Map();
 
   const width = jsonData.width;
@@ -20,21 +33,23 @@ async function loadJsonMap() {
   const tileHeight = jsonData.tileheight;
   const tileWidth = jsonData.tilewidth;
 
+  const tilesetData = jsonData.tilesets[0];
+  const imageWidth = tilesetData.imagewidth;
+  const imageHeight = tilesetData.imageheight;
+  const firstgid = tilesetData.firstgid;
+  const rows = imageHeight / tileHeight;
+  const columns = imageWidth / tileWidth;
+
   const uniqueTileSet = new Set();
   for (const layer of jsonData.layers) {
     for (const tileNum of layer.data) {
-      let finalNum = tileNum - 1;
+      let finalNum = tileNum - firstgid;
       if (finalNum < 0) {
         finalNum = 0;
       }
       uniqueTileSet.add(finalNum);
     }
   }
-
-  const imageWidth = jsonData.tilesets[0].imagewidth;
-  const imageHeight = jsonData.tilesets[0].imageheight;
-  const rows = imageHeight / tileHeight;
-  const columns = imageWidth / tileWidth;
 
   console.log(uniqueTileSet);
   console.log(imageWidth);
@@ -70,7 +85,7 @@ async function loadJsonMap() {
 
     console.log("Start");
     data.forEach((value, index) => {
-      let finalNum = value - 1;
+      let finalNum = value - firstgid;
       if (finalNum < 0) {
         finalNum = 0;
       }
@@ -94,8 +109,15 @@ async function loadJsonMap() {
 const app = new Application();
 
 await app.init({
-  width: 800,
-  height: 500,
+  width: WIDTH,
+  height: HEIGHT,
+  antialias: true,
+  preference: "webgl",
+});
+
+await Assets.init({
+  basePath: "src/assets",
+  manifest: MANIFEST,
 });
 
 document.body.appendChild(app.canvas);
