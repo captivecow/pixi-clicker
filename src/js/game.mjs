@@ -1,45 +1,102 @@
-// description: This example demonstrates how to use a Container to group and manipulate multiple sprites
-import { Application, Assets, Container, Sprite } from "pixi.js";
+import { Application, Assets, Sprite, Rectangle, Texture, SCALE_MODES } from "pixi.js";
 
-(async () => {
-  // Create a new application
-  const app = new Application();
+async function loadJsonMap() {
+  const WIDTH = 800;
+  const HEIGHT = 600;
 
-  // Initialize the application
-  await app.init({ background: "#1099bb", resizeTo: window });
+  const width_draw_amount = 20;
+  const height_draw_amount = Math.floor(width_draw_amount * (HEIGHT / WIDTH));
 
-  // Append the application canvas to the document body
-  document.body.appendChild(app.canvas);
+  const width_draw = Math.floor(WIDTH / width_draw_amount);
+  const height_draw = Math.floor(HEIGHT / height_draw_amount);
 
-  // Create and add a container to the stage
-  const container = new Container();
+  const jsonData = await Assets.load("src/assets/tileset.json");
+  const tilesetSource = await Assets.load("src/assets/tileset.png");
+  tilesetSource.source.scaleMode = "nearest"; // Use 'linear' for smooth scaling
+  const tileIndexMap = new Map();
 
-  app.stage.addChild(container);
+  const width = jsonData.width;
+  const height = jsonData.height;
+  const tileHeight = jsonData.tileheight;
+  const tileWidth = jsonData.tilewidth;
 
-  // Load the bunny texture
-  const texture = await Assets.load("https://pixijs.com/assets/bunny.png");
-
-  // Create a 5x5 grid of bunnies in the container
-  for (let i = 0; i < 25; i++) {
-    const bunny = new Sprite(texture);
-
-    bunny.x = (i % 5) * 40;
-    bunny.y = Math.floor(i / 5) * 40;
-    container.addChild(bunny);
+  const uniqueTileSet = new Set();
+  for (const layer of jsonData.layers) {
+    for (const tileNum of layer.data) {
+      let finalNum = tileNum - 1;
+      if (finalNum < 0) {
+        finalNum = 0;
+      }
+      uniqueTileSet.add(finalNum);
+    }
   }
 
-  // Move the container to the center
-  container.x = app.screen.width / 2;
-  container.y = app.screen.height / 2;
+  const imageWidth = jsonData.tilesets[0].imagewidth;
+  const imageHeight = jsonData.tilesets[0].imageheight;
+  const rows = imageHeight / tileHeight;
+  const columns = imageWidth / tileWidth;
 
-  // Center the bunny sprites in local container coordinates
-  container.pivot.x = container.width / 2;
-  container.pivot.y = container.height / 2;
+  console.log(uniqueTileSet);
+  console.log(imageWidth);
+  console.log(imageHeight);
+  console.log(columns + "," + rows);
 
-  // Listen for animate update
-  app.ticker.add((time) => {
-    // Continuously rotate the container!
-    // * use delta to create frame-independent transform *
-    container.rotation -= 0.01 * time.deltaTime;
-  });
-})();
+  // Formula for index: rowsxcolumns, (r * columns) + c
+  // Find row from index: (i/columns)
+  // for (let r = 0; r < rows; r++) {
+  //   for (let c = 0; c < columns; c++) {
+  //     console.log("(" + c + "," + r + ")");
+  //     console.log(r * columns + c);
+  //   }
+  // }
+
+  for (const tile of uniqueTileSet) {
+    const tileRow = Math.floor(tile / columns);
+    const tileColumn = tile - tileRow * columns;
+    const textureStartX = tileColumn * tileWidth;
+    const textureStartY = tileRow * tileHeight;
+
+    const subsetRectangle = new Rectangle(textureStartX, textureStartY, tileWidth, tileHeight);
+
+    const subsetTexture = new Texture({
+      source: tilesetSource.source,
+      frame: subsetRectangle,
+    });
+    tileIndexMap.set(tile, subsetTexture);
+  }
+
+  for (const layer of jsonData.layers) {
+    const data = layer.data;
+
+    console.log("Start");
+    data.forEach((value, index) => {
+      let finalNum = value - 1;
+      if (finalNum < 0) {
+        finalNum = 0;
+      }
+      const tileNumTexture = tileIndexMap.get(finalNum);
+      const tileSprite = new Sprite(tileNumTexture);
+      const tileRow = Math.floor(index / width);
+      const tileColumn = index - tileRow * width;
+      console.log(finalNum);
+      console.log(tileColumn + "," + tileRow);
+      const textureStartX = tileColumn * width_draw;
+      const textureStartY = tileRow * height_draw;
+      console.log(textureStartX + "," + textureStartY);
+      tileSprite.position.set(textureStartX, textureStartY);
+      tileSprite.width = width_draw;
+      tileSprite.height = height_draw;
+      app.stage.addChild(tileSprite);
+    });
+  }
+}
+
+const app = new Application();
+
+await app.init({
+  width: 800,
+  height: 500,
+});
+
+document.body.appendChild(app.canvas);
+await loadJsonMap();
