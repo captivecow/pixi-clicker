@@ -1,35 +1,47 @@
-import { Application, Assets, Sprite, Rectangle, Texture, loadJson } from "pixi.js";
-
-const WIDTH = 800;
-const HEIGHT = 600;
+import { Application, Assets, Sprite, Rectangle, Texture } from "pixi.js";
+import { GameConfig } from "./GameConfig";
 
 const MANIFEST = {
   bundles: [
     {
       name: "dreamland",
       assets: [
-        { alias: "jsonData", src: "tileset.json", parser: loadJson },
+        { alias: "jsonData", src: "tileset.json" },
         { alias: "tileSourceTexture", src: "tileset.png", data: { scaleMode: "nearest" } },
       ],
     },
   ],
 };
 
-async function loadJsonMap() {
-  const dreamlandAssets = await Assets.loadBundle("dreamland");
+async function loadJsonMap(screenWidth, screenHeight) {
 
-  const width_draw_amount = 20;
-  const height_draw_amount = Math.floor(width_draw_amount * (HEIGHT / WIDTH));
-
-  const width_draw = Math.floor(WIDTH / width_draw_amount);
-  const height_draw = Math.floor(HEIGHT / height_draw_amount);
-
-  const jsonData = dreamlandAssets.jsonData;
-  const tilesetSource = dreamlandAssets.tileSourceTexture;
+  const jsonData = Assets.get("jsonData");
+  const tilesetSource = Assets.get("tileSourceTexture");
   const tileIndexMap = new Map();
+
+  console.log("Screen dimensions: " + screenWidth + "," + screenHeight);
+
+  const min_tiles_x = Math.floor(GameConfig.MIN_RES_WIDTH / jsonData.tilewidth);
+  const min_tiles_y = Math.floor(GameConfig.MIN_RES_HEIGHT / jsonData.tileheight);
+
+  console.log("Base tiles needed to meet min resolution: " + min_tiles_x + "," + min_tiles_y);
 
   const width = jsonData.width;
   const height = jsonData.height;
+
+  let drawAmountX = min_tiles_x;
+  let drawAmountY = min_tiles_y;
+
+  if(width < min_tiles_x){
+    drawAmountX = width;
+  } 
+  if(height < min_tiles_y){
+    drawAmountY = height;
+  }
+
+  const width_draw = Math.ceil(screenWidth / drawAmountX);
+  const height_draw = Math.ceil(screenHeight / drawAmountY);
+
   const tileHeight = jsonData.tileheight;
   const tileWidth = jsonData.tilewidth;
 
@@ -83,7 +95,7 @@ async function loadJsonMap() {
   for (const layer of jsonData.layers) {
     const data = layer.data;
 
-    console.log("Start");
+    // console.log("Start");
     data.forEach((value, index) => {
       let finalNum = value - firstgid;
       if (finalNum < 0) {
@@ -93,11 +105,8 @@ async function loadJsonMap() {
       const tileSprite = new Sprite(tileNumTexture);
       const tileRow = Math.floor(index / width);
       const tileColumn = index - tileRow * width;
-      console.log(finalNum);
-      console.log(tileColumn + "," + tileRow);
       const textureStartX = tileColumn * width_draw;
       const textureStartY = tileRow * height_draw;
-      console.log(textureStartX + "," + textureStartY);
       tileSprite.position.set(textureStartX, textureStartY);
       tileSprite.width = width_draw;
       tileSprite.height = height_draw;
@@ -109,16 +118,14 @@ async function loadJsonMap() {
 const app = new Application();
 
 await app.init({
-  width: WIDTH,
-  height: HEIGHT,
+  resizeTo: window,
   antialias: true,
   preference: "webgl",
 });
-
 await Assets.init({
   basePath: "src/assets",
   manifest: MANIFEST,
 });
-
+await Assets.loadBundle("dreamland");
 document.body.appendChild(app.canvas);
-await loadJsonMap();
+await loadJsonMap(app.screen.width, app.screen.height);
