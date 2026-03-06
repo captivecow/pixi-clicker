@@ -46,7 +46,7 @@ export class TiledMap {
       const tileLayer = new TileLayer(layer.name, layer.id);
       const data = layer.data;
       data.forEach((value, index) => {
-        if(value == 0){
+        if (value == 0) {
           return;
         }
         const localId = value - firstgid;

@@ -2,7 +2,6 @@ import { Container } from "pixi.js";
 import { GameConfig } from "./GameConfig";
 
 export class Camera {
-
   tiledMap;
   cameraContainer;
   mapContainer;
@@ -11,12 +10,12 @@ export class Camera {
     this.tiledMap = tiledMap;
     this.cameraContainer = cameraContainer;
     this.mapContainer = mapContainer;
-    this.cameraContainer.on('pointerdown', (event) => this.eventClick());
+    this.cameraContainer.on("pointerdown", (event) => this.eventClick());
   }
 
   static createCamera(tiledMap) {
     const cameraContainer = new Container();
-    cameraContainer.eventMode = 'static';
+    cameraContainer.eventMode = "static";
     const mapContainer = new Container();
 
     for (const tileLayer of tiledMap.tileLayers) {
@@ -58,7 +57,7 @@ export class Camera {
     }
   }
 
-  eventClick(event){
-      console.log("hello");
+  eventClick(event) {
+    console.log("hello");
   }
 }
