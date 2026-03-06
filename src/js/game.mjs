@@ -1,6 +1,6 @@
 import { Application, Assets, Sprite, Rectangle, Texture } from "pixi.js";
 import { GameConfig } from "./GameConfig";
-import { TiledMap } from "./TiledMap";
+import { TiledMap } from "./tiled/TiledMap";
 import { Camera } from "./Camera";
 
 const MANIFEST = {
@@ -31,6 +31,7 @@ document.body.appendChild(app.canvas);
 
 const gameMap = TiledMap.createMap(GameConfig.DEFAULT_MAP_NAME);
 const camera = Camera.createCamera(gameMap);
+camera.resize();
 
 window.addEventListener("resize", () => camera.resize());
 
