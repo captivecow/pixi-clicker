@@ -16,7 +16,6 @@ const MANIFEST = {
 };
 
 async function loadJsonMap(screenWidth, screenHeight) {
-
   const jsonData = Assets.get("jsonData");
   const tilesetSource = Assets.get("tileSourceTexture");
   const tileIndexMap = new Map();
@@ -34,10 +33,10 @@ async function loadJsonMap(screenWidth, screenHeight) {
   let drawAmountX = min_tiles_x;
   let drawAmountY = min_tiles_y;
 
-  if(width < min_tiles_x){
+  if (width < min_tiles_x) {
     drawAmountX = width;
-  } 
-  if(height < min_tiles_y){
+  }
+  if (height < min_tiles_y) {
     drawAmountY = height;
   }
 
@@ -124,8 +123,6 @@ document.body.appendChild(app.canvas);
 const gameMap = TiledMap.createMap(GameConfig.DEFAULT_MAP_NAME);
 const camera = Camera.createCamera(gameMap);
 
-window.addEventListener('resize', () => camera.resize());
+window.addEventListener("resize", () => camera.resize());
 
 app.stage.addChild(camera.cameraContainer);
-
-
