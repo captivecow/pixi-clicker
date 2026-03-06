@@ -1,13 +1,15 @@
 import { Application, Assets, Sprite, Rectangle, Texture } from "pixi.js";
 import { GameConfig } from "./GameConfig";
+import { TiledMap } from "./TiledMap";
+import { Camera } from "./Camera";
 
 const MANIFEST = {
   bundles: [
     {
-      name: "dreamland",
+      name: "DREAMLAND",
       assets: [
-        { alias: "jsonData", src: "tileset.json" },
-        { alias: "tileSourceTexture", src: "tileset.png", data: { scaleMode: "nearest" } },
+        { alias: "DREAMLAND-data", src: "tileset.json" },
+        { alias: "DREAMLAND-textureSource", src: "tileset.png", data: { scaleMode: "nearest" } },
       ],
     },
   ],
@@ -68,15 +70,6 @@ async function loadJsonMap(screenWidth, screenHeight) {
   console.log(imageHeight);
   console.log(columns + "," + rows);
 
-  // Formula for index: rowsxcolumns, (r * columns) + c
-  // Find row from index: (i/columns)
-  // for (let r = 0; r < rows; r++) {
-  //   for (let c = 0; c < columns; c++) {
-  //     console.log("(" + c + "," + r + ")");
-  //     console.log(r * columns + c);
-  //   }
-  // }
-
   for (const tile of uniqueTileSet) {
     const tileRow = Math.floor(tile / columns);
     const tileColumn = tile - tileRow * columns;
@@ -95,7 +88,6 @@ async function loadJsonMap(screenWidth, screenHeight) {
   for (const layer of jsonData.layers) {
     const data = layer.data;
 
-    // console.log("Start");
     data.forEach((value, index) => {
       let finalNum = value - firstgid;
       if (finalNum < 0) {
@@ -126,6 +118,14 @@ await Assets.init({
   basePath: "src/assets",
   manifest: MANIFEST,
 });
-await Assets.loadBundle("dreamland");
+await Assets.loadBundle(GameConfig.DEFAULT_MAP_NAME);
 document.body.appendChild(app.canvas);
-await loadJsonMap(app.screen.width, app.screen.height);
+
+const gameMap = TiledMap.createMap(GameConfig.DEFAULT_MAP_NAME);
+const camera = Camera.createCamera(gameMap);
+
+window.addEventListener('resize', () => camera.resize());
+
+app.stage.addChild(camera.cameraContainer);
+
+
