@@ -46,7 +46,10 @@ export class TiledMap {
       const tileLayer = new TileLayer(layer.name, layer.id);
       const data = layer.data;
       data.forEach((value, index) => {
-        const localId = value == 0 ? 0 : value - firstgid;
+        if(value == 0){
+          return;
+        }
+        const localId = value - firstgid;
         const texture = textureMap.get(localId);
         const tileSprite = new Sprite(texture);
         const mapTile = new Tile(index, tileSprite);

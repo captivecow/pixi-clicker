@@ -2,6 +2,7 @@ import { Container } from "pixi.js";
 import { GameConfig } from "./GameConfig";
 
 export class Camera {
+
   tiledMap;
   cameraContainer;
   mapContainer;
@@ -10,10 +11,12 @@ export class Camera {
     this.tiledMap = tiledMap;
     this.cameraContainer = cameraContainer;
     this.mapContainer = mapContainer;
+    this.cameraContainer.on('pointerdown', (event) => this.eventClick());
   }
 
   static createCamera(tiledMap) {
     const cameraContainer = new Container();
+    cameraContainer.eventMode = 'static';
     const mapContainer = new Container();
 
     for (const tileLayer of tiledMap.tileLayers) {
@@ -28,8 +31,8 @@ export class Camera {
   resize() {
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
-    const min_tiles_x = Math.floor(GameConfig.MIN_RES_WIDTH / this.tiledMap.tileSize);
-    const min_tiles_y = Math.floor(GameConfig.MIN_RES_HEIGHT / this.tiledMap.tileSize);
+    const min_tiles_x = Math.floor(GameConfig.VIEWPORT_MAX_WIDTH / this.tiledMap.tileSize);
+    const min_tiles_y = Math.floor(GameConfig.VIEWPORT_MAX_HEIGHT / this.tiledMap.tileSize);
 
     let drawAmountX = min_tiles_x;
     let drawAmountY = min_tiles_y;
@@ -53,5 +56,9 @@ export class Camera {
         tile.setPosition(textureStartX, textureStartY);
       }
     }
+  }
+
+  eventClick(event){
+      console.log("hello");
   }
 }
